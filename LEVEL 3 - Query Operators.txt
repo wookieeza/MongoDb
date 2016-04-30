@@ -1,0 +1,47 @@
+/*  LEVEL 3 - Query Operators */
+
+-- query based on multiple criteria
+db.potions.find({"vendor":"Seratonin", "ratings.strength":3});
+
+-- query based on comparison, eg. price
+$gt Greater Than
+$lt Less Than
+$gte Greater Than and Equal To
+$lte Less Than and Equal To
+$ne Not Equal
+
+ db.potions.find({"price": {"$lte":20}})
+
+ > db.potions.find({"price": {"$gt":13,"$lte":20}})
+
+ > db.potions.find({"ingredients":{"$ne":"lace"}})
+
+ db.potions.find({"sizes":{"$elemMatch":{"$gt":8,"$lt":10}}})
+
+ db.wands.find(
+  {"lengths": {"$elemMatch":{"$gte":2.5,"$lt":3}}}
+)
+
+-- Projections - only return name vendor &  fields
+ db.potions.find({"ratings.strength":{"$gt":2}},{"name":true,"vendor":true})
+> db.potions.find({"ratings.strength":{"$gt":2}},{"vendor":false,"price":false})
+
+-- only time you cn hve true and false in a projection
+> db.potions.find({"ratings.strength":{"$gt":2}},{"vendor":false,"price":false,"_id":false})
+
+--iterating & the cursor
+> db.potions.find().count();
+7
+
+--sort
+> db.potions.find().sort({"price":1}) // all, ascending on price
+
+-- skip and limit
+db.potions.find().limit(3);
+
+> db.potions.find().sort({"price":1}).limit(3);
+
+> db.potions.find().skip(3).limit(3);
+
+db.wands.find({}).sort({"price":-1}).limit(3) // 3 most expensive
+
