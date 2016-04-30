@@ -1,0 +1,104 @@
+/*  LEVEL 2 - Removing & Modifying Documents */
+
+-- remove, using query of equality
+db.potions.remove({"name": "Love"})
+WriteResult({"nRemoved":1})
+
+db.potions.remove({"vendor":"Kettlecooked"}) // will remove all matching documents
+
+-- update field on FIRST doc -- nb, only applies to the first matching doc
+> db.potions.update(
+  {"name":"Love"},
+  { "$set":{"price",3.99} // if no update parameter will replace whole doc with price:3.99 as doc
+  })
+
+  WriteResult({
+    "nMatched": 1
+    "nUpserted": 0 // number created because of the update
+    "nModified": 1
+  })
+
+  -- update field on ALL send options parameter with multi set to true 
+ > db.potions.update(
+    { "name" : "KC"},
+    { "$set" : {"name":"Kettlecooked"}},
+    { "multi" : true}
+  )
+
+  WriteResult({
+    "nMatched": 4
+    "nUpserted": 0 // number created because of the update
+    "nModified": 4
+  })
+
+ -- increment field on EXISTING document by given positive or negative number, if field doesnt exist it gets created with the value
+ db.logs.update(
+   {"potion": "Frog tonic"},
+   {"$inc":{"count":1} }
+   )
+
+ -- increment field on non existing doc:
+ db.logs.update(
+   {"potion": "Love"},
+   {"$inc": {"count":1}},
+   {"upsert":true} // creates doc from the query and update parameters
+ )
+ WriteResult({
+    "nMatched": 0
+    "nUpserted": 1 // no docs matched but one was upserted
+    "nModified": 0
+  })
+
+  //if execure again
+   WriteResult({
+    "nMatched": 1
+    "nUpserted": 0 // no docs matched but one was upserted
+    "nModified": 1
+  })
+  matched and modified 1, love count now == 2
+
+  
+-- Removing fields from documents 
+-- add colour to all
+>db.potions.update(
+  {},
+  {"$set":{"colour":"red"}},
+  {"multi":true})
+--remove colour from all
+db.potions.update(
+  {},
+  {"$unset":{"colour":""}},
+  {"multi":true})
+
+--renaming fields
+db.potions.update(
+  {},
+  {"$rename":{"colour":"color"}},
+  {"multi":true})
+
+-- update value of array item
+db.potions.update(
+ {"name":"Shrinking"},
+ {"$set",{"ingredients.1":42}}) // assumes array exists, if it doesnt it will add an embedded doc under ingredients with 1 as name and 42 as value
+
+-- positional operator
+db.potions.update({"ingredients":42},{"$set":{"ingredients.$":"lace"}},{"multi":true})
+
+ --
+ update fied value on embedded document
+ db.potions.update({"ratings.score":5},{"$set":{"ratings.strength":9}})
+
+ -- other operators, min max and mul - see docs
+ --arrays pop and push:
+
+ pop 1 = remove last
+ pop -1 = remove first
+ db.potions.update({"ratings.strength":9},{"$pop":{"ingredients":1}})
+
+ push adds to end
+ db.potions.update({"ratings.score":5},{"$push":{"ingredients":"chocolate"}})
+
+ --addtoSet : add distinct
+ db.potions.update({"ratings.score":5},{"$addToSet":{"ingredients":"chocolate"}})
+
+--pull - removes all instances
