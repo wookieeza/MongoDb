@@ -1,0 +1,119 @@
+Mongo - code school
+
+Start deamon: mongod
+db, collections, documents
+db.collection_name.find() //shows all
+
+/*  LEVEL 1 - Inserting & Finding Documents */
+
+JSON & BSON
+Strings "Invisibiliy"
+Numbers 1400 or 5.99 preserves precision
+Booleans true
+Arrays ["my very own","new",1,true,"array"]
+Objects {"name":"Debbie"}
+Null null
+ObjectID ObjectID(...)
+ISODate ISODate(..)
+
+
+
+>help
+>show dbs
+>use db_name // db_name is only created when you write to it
+
+-- assign variable in shell: standard javascript
+> var potion = {"name":"Invisibility","vendor":"Kettlecooked"} // is a document
+> potion
+{ "name" : "Invisibility", "vendor" : "Kettlecooked" }
+
+-- insert
+// collection is created when you write document to it
+> db.potions.insert({"name":"Shrinking","vendor":"Kettlecooked"}) 
+WriteResult({ "nInserted" : 1 })
+
+-- find db.collections_name.find()
+>db.potions.find() // all
+
+-- find by query of equality
+>db.potions.find({"name":"Invisibility"})
+>db.potions.find({"vendor":"Kettlecooked"})
+
+-- insert
+>db.potions.insert({
+	"name": "Invisibility",
+	"vendor": "Kettlecooked",
+	"price": 10.99,
+	"score": 59,
+	"tryDate": new Date(2016, 8, 13), // month zero based
+	"ingredients": ["newt toes", 42, "laughter"],
+	"ratings": { // embedded docs dont require id, just child of main
+	  "strength": 2,
+	  "flavour" : 5
+	}
+})
+
+-- find by array value : array values treated individually so:
+>db.potions.find({"ingredients":"laughter"})
+
+-- find by embedded document field using dot notation
+>db.potions.find("ratings.flavour":5)
+WriteResult
+/*  LEVEL 2 - Removing & Modifying Documents */
+
+-- remove, using query of equality
+db.potions.remove({"name": "Love"})
+WriteResult({"nRemoved":1})
+
+db.potions.remove({"vendor":"Kettlecooked"}) // will remove all matching documents
+
+-- update field on FIRST doc -- nb, only applies to the first matching doc
+> db.potions.update(
+  {"name":"Love"},
+  { "$set":{"price",3.99} // if no update parameter will replace whole doc with price:3.99 as doc
+  })
+
+  WriteResult({
+    "nMatched": 1
+    "nUpserted": 0 // number created because of the update
+    "nModified": 1
+  })
+
+  -- update field on ALL send options parameter with multi set to true 
+ > db.potions.update(
+    { "name" : "KC"},
+    { "$set" : {"name":"Kettlecooked"}},
+    { "multi" : true}
+  )
+
+  WriteResult({
+    "nMatched": 4
+    "nUpserted": 0 // number created because of the update
+    "nModified": 4
+  })
+
+ -- increment field on EXISTING document by given positive or negative number, if field doesnt exist it gets created with the value
+ db.logs.update(
+   {"potion": "Frog tonic"},
+   {"$inc":{"count":1} }
+   )
+
+ -- increment field on non existing doc:
+ db.logs.update(
+   {"potion": "Love"},
+   {"$inc": {"count":1}},
+   {"upsert":true} // creates doc from the query and update parameters
+ )
+ WriteResult({
+    "nMatched": 0
+    "nUpserted": 1 // no docs matched but one was upserted
+    "nModified": 0
+  })
+
+  //if execure again
+   WriteResult({
+    "nMatched": 1
+    "nUpserted": 0 // no docs matched but one was upserted
+    "nModified": 1
+  })
+  matched and modified 1, love count now == 2
