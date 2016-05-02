@@ -1,2 +1,31 @@
 /* LEVEL 5 - Aggregations */
 
+db.wands.aggregate([
+  {"$group":{
+   "_id":"$maker",
+   "total_wands":{"$sum":1},
+   "max_magic":{"$max":"$damage.magic"}
+  }
+   }
+  
+])
+
+
+db.wands.aggregate([
+  {"$group":{
+   "_id":"$maker",
+   "total_wands":{"$sum":1},
+   "max_magic":{"$max":"$damage.magic"},
+    "lowest_price":{"$min":"$price"}
+  }
+   }
+  
+])
+
+
+
+db.wands.aggregate([
+  {"$match": {"price": {"$lt": 50}}},
+  {"$group": {"_id": "$maker", "average_magic": {"$avg": "$damage.magic"}}},
+  {"$match": {"average_magic": {"$gt": 40}}}
+])
